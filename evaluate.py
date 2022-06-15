@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--path_ckpt', type=str, default=r'./ckpt/transformer.h5',
                         help='checkpoint path')
     parser.add_argument('--batch_size', type=int, default=128, help='batch size')
-    
+
     try:
         args = parser.parse_args()
     except:
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     transformer.build_model()
     transformer.load_model(model_path=args.path_ckpt)
 
-    # Predict 
+    # Predict
     predict_ls = []
     start = time.time()
     for text in lines_en_test:
@@ -61,14 +61,14 @@ if __name__ == '__main__':
     # write file
     with open('predict.txt', 'w') as file:
         file.write(predict_ls)
-    
+
     # bleu score
     path_refs = ['predict.txt']
     path_hyp = '/content/drive/MyDrive/translation/envi-nlp/test.vi'
 
     result = bleu_score(path_refs, path_hyp, n_lines=None)
     for i in range(4):
-        print('Blue score in {}_gram: {}'.format(i+1, result[i]) )
+        print('Blue score in {}_gram: {}'.format(i + 1, result[i]))
 
 
 
