@@ -3,6 +3,10 @@ import re
 import pickle
 import numpy as np
 
+from vncorenlp import VnCoreNLP
+
+annotator = VnCoreNLP("/content/drive/MyDrive/translation/VnCoreNLP/VnCoreNLP-1.1.1.jar",
+                      annotators="wseg", max_heap_size='-Xmx2g')
 
 def process_data(data):
     text = data.strip().lower()
@@ -19,6 +23,18 @@ def format_dataset(inp_text, inp_tgt):
         'inp_encoder': inp_text,
         'inp_decoder': inp_tgt[:, :-1]
     }, inp_tgt[:, 1:])
+
+def vncore_tokenizer(data):
+    # To perform word segmentation only
+    word_text = annotator.tokenize(data)
+    text_tmp = []
+    for lines in word_text:
+        for word in lines:
+            text_tmp.append(word)
+
+    text_tmp = ['start'] + text_tmp + ['end']
+
+    return text_tmp
 
 def get_token(text, tokenizer, maxlen):
     tokens = tokenizer.encode_plus(text, max_length=maxlen, truncation=True,

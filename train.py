@@ -4,7 +4,7 @@ import sys
 
 from transformer.transformer_model import Transformers
 from losses import scce_with_ls
-from load_data import process_data, make_dataset
+from load_data import process_data, make_dataset, vncore_tokenizer
 from transformers import AutoTokenizer
 
 
@@ -38,9 +38,8 @@ def train(args):
         lines_vi_train = f.readlines()
     lines_en_train = [process_data(text) for text in lines_en_train]
     lines_vi_train = [process_data(text) for text in lines_vi_train]
-    lines_vi_train = ['start ' + text + ' end' for text in lines_vi_train]
+    lines_vi_train = [vncore_tokenizer(text) for text in lines_vi_train]
     train_pairs = [lines_en_train, lines_vi_train]
-    print('Read train done!\n')
 
     with open(args.path_val_en, 'r', encoding='utf-8') as f:
         lines_en_dev = f.readlines()
@@ -48,9 +47,8 @@ def train(args):
         lines_vi_dev = f.readlines()
     lines_en_dev = [process_data(text) for text in lines_en_dev]
     lines_vi_dev = [process_data(text) for text in lines_vi_dev]
-    lines_vi_dev = ['start ' + text + ' end' for text in lines_vi_dev]
+    lines_vi_dev = [vncore_tokenizer(text) for text in lines_vi_dev]
     val_pairs = [lines_en_dev, lines_vi_dev]
-    print('Read validation done! \n')
 
     # load Tokenizer
     VietTokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base")
@@ -72,7 +70,9 @@ def train(args):
     optimizer = tf.keras.optimizers.Adam(learning_rate(1. * args.train_step), beta_1=0.9, beta_2=0.98,
                                          epsilon=1e-8, clipnorm=0.1)
 
-    callback = [tf.keras.callbacks.ModelCheckpoint(filepath=args.path_ckpt, monitor='val_loss', save_best_only=True)]
+    callback = [tf.keras.callbacks.ModelCheckpoint(filepath=args.path_ckpt, monitor='val_loss',
+                                                   mode='min', save_best_only=True)]
+
     # calculated step training
     steps_per_epoch = tf.data.experimental.cardinality(train_ds).numpy()
 
